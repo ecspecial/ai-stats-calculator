@@ -43,6 +43,21 @@ async function main() {
         const refUsers = await users.countDocuments({ referredBy: { $ne: null } });
         console.log(`Количество юзеров, зарегистрированных по реферальной ссылке: ${refUsers}`);
 
+        // Task 3b: Users registered via ref link per day
+        console.log("Количество регистраций по реферальной ссылке по дням:");
+        for (let d = new Date(startDate); d <= endDate; d.setDate(d.getDate() + 1)) {
+            const startOfDay = new Date(d);
+            const endOfDay = new Date(d);
+            endOfDay.setDate(d.getDate() + 1);
+
+            const referralsPerDay = await users.countDocuments({
+                referredBy: { $ne: null },
+                createdAt: { $gte: startOfDay, $lt: endOfDay }
+            });
+
+            console.log(`Дата: ${startOfDay.toISOString().split('T')[0]} - Регистрации по реферальной ссылке: ${referralsPerDay}`);
+        }
+
         // Task 4: Total amount of generations
         const totalGenerations = await images.countDocuments();
         console.log(`Общее количество генераций: ${totalGenerations}`);
@@ -76,6 +91,25 @@ async function main() {
         } else {
             console.log("Средняя оценка пользователей: Нет данных");
         }
+
+         // Task 8b: Average user feedback rating per day
+         console.log("Средняя оценка пользователей по дням:");
+         for (let d = new Date(startDate); d <= endDate; d.setDate(d.getDate() + 1)) {
+             const startOfDay = new Date(d);
+             const endOfDay = new Date(d);
+             endOfDay.setDate(d.getDate() + 1);
+ 
+             const dailyFeedback = await users.aggregate([
+                 { $match: { feedbackRating: { $ne: null }, feedbackSubmittedTime: { $gte: startOfDay, $lt: endOfDay } } },
+                 { $group: { _id: null, averageRating: { $avg: "$feedbackRating" }, count: { $sum: 1 } } }
+             ]).toArray();
+ 
+             if (dailyFeedback.length > 0) {
+                 console.log(`Дата: ${startOfDay.toISOString().split('T')[0]} - Средняя оценка: ${dailyFeedback[0].averageRating.toFixed(2)} (на основе ${dailyFeedback[0].count} отзывов)`);
+             } else {
+                 console.log(`Дата: ${startOfDay.toISOString().split('T')[0]} - Нет данных`);
+             }
+         }
 
     } finally {
         // Ensures that the client will close when you finish/error
