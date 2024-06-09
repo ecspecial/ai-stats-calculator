@@ -26,15 +26,13 @@ async function main() {
         // const startDate = new Date("2024-05-16T14:50:06.306Z");
         // const endDate = new Date();  // Use the current date, or set a specific end date
 
-        // Set startDate to 15 days ago at the start of the day
         const startDate = new Date();
-        startDate.setDate(startDate.getDate() - 14);
-        startDate.setHours(0, 0, 0, 0);
+        startDate.setUTCDate(startDate.getUTCDate() - 14);
+        startDate.setUTCHours(0, 0, 0, 0);
 
-        // Set endDate to the end of tomorrow
         const endDate = new Date();
-        endDate.setDate(endDate.getDate() + 1);
-        endDate.setHours(23, 59, 59, 999);
+        endDate.setUTCDate(endDate.getUTCDate());
+        endDate.setUTCHours(23, 59, 59, 999);
 
         for (let d = new Date(startDate); d <= endDate; d.setDate(d.getDate() + 1)) {
             const startOfDay = new Date(d);
