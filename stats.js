@@ -22,8 +22,20 @@ async function main() {
 
         // Task 2: Count users per day
         console.log("Количество юзеров по дням:");
-        const startDate = new Date("2024-05-16T14:50:06.306Z");
-        const endDate = new Date();  // Use the current date, or set a specific end date
+        
+        // const startDate = new Date("2024-05-16T14:50:06.306Z");
+        // const endDate = new Date();  // Use the current date, or set a specific end date
+
+        // Set startDate to 15 days ago at the start of the day
+        const startDate = new Date();
+        startDate.setDate(startDate.getDate() - 14);
+        startDate.setHours(0, 0, 0, 0);
+
+        // Set endDate to the end of tomorrow
+        const endDate = new Date();
+        endDate.setDate(endDate.getDate() + 1);
+        endDate.setHours(23, 59, 59, 999);
+
         for (let d = new Date(startDate); d <= endDate; d.setDate(d.getDate() + 1)) {
             const startOfDay = new Date(d);
             const endOfDay = new Date(d);
@@ -142,6 +154,19 @@ async function main() {
             } else {
                 console.log(`Дата: ${startOfDay.toISOString().split('T')[0]} - Нет данных`);
             }
+        }
+
+        // Task 10: Find user with the maximum number of image generations
+        const maxGenerationsPerUser = await images.aggregate([
+            { $group: { _id: "$userId", totalGenerations: { $sum: 1 } } },
+            { $sort: { totalGenerations: -1 } },
+            { $limit: 1 }
+        ]).toArray();
+
+        if (maxGenerationsPerUser.length > 0) {
+            console.log(`Пользователь с максимальным количеством генераций: UserId ${maxGenerationsPerUser[0]._id} (${maxGenerationsPerUser[0].totalGenerations} генераций)`);
+        } else {
+            console.log("Нет данных о генерациях.");
         }
 
     } finally {
