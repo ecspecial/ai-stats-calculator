@@ -111,6 +111,39 @@ async function main() {
              }
          }
 
+         // Task 9: Print user feedback by day
+        console.log("Отзывы пользователей по дням:");
+        for (let d = new Date(startDate); d <= endDate; d.setDate(d.getDate() + 1)) {
+            const startOfDay = new Date(d);
+            const endOfDay = new Date(d);
+            endOfDay.setDate(d.getDate() + 1);
+
+            const dailyFeedbackDetails = await users.aggregate([
+                {
+                    $match: {
+                        feedbackSubmittedTime: { $gte: startOfDay, $lt: endOfDay },
+                        feedbackSubmitted: true
+                    }
+                },
+                {
+                    $project: {
+                        date: { $dateToString: { format: "%Y-%m-%d", date: "$feedbackSubmittedTime" } },
+                        feedbackRating: 1,
+                        feedback1: 1,
+                        feedback2: 1
+                    }
+                }
+            ]).toArray();
+
+            if (dailyFeedbackDetails.length > 0) {
+                dailyFeedbackDetails.forEach(feedback => {
+                    console.log(`Дата: ${feedback.date} - Рейтинг: ${feedback.feedbackRating}, Отзыв 1: ${feedback.feedback1}, Отзыв 2: ${feedback.feedback2}`);
+                });
+            } else {
+                console.log(`Дата: ${startOfDay.toISOString().split('T')[0]} - Нет данных`);
+            }
+        }
+
     } finally {
         // Ensures that the client will close when you finish/error
         await client.close();
