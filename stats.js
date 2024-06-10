@@ -121,7 +121,7 @@ async function main() {
              }
          }
 
-         // Task 9: Print user feedback by day
+        // Task 9: Print user feedback by day
         console.log("Отзывы пользователей по дням:");
         for (let d = new Date(startDate); d <= endDate; d.setDate(d.getDate() + 1)) {
             const startOfDay = new Date(d);
@@ -165,6 +165,20 @@ async function main() {
             console.log(`Пользователь с максимальным количеством генераций: UserId ${maxGenerationsPerUser[0]._id} (${maxGenerationsPerUser[0].totalGenerations} генераций)`);
         } else {
             console.log("Нет данных о генерациях.");
+        }
+
+        // Task 11: Online users per day
+        console.log("Количество пользователей онлайн по дням:");
+        for (let d = new Date(startDate); d <= endDate; d.setDate(d.getDate() + 1)) {
+            const startOfDay = new Date(d);
+            const endOfDay = new Date(d);
+            endOfDay.setDate(d.getDate() + 1);
+
+            const dailyOnlineUsers = await images.distinct('userId', {
+                createdAt: { $gte: startOfDay, $lt: endOfDay }
+            });
+
+            console.log(`Дата: ${startOfDay.toISOString().split('T')[0]} - Онлайн пользователи: ${dailyOnlineUsers.length}`);
         }
 
     } finally {
