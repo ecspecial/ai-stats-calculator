@@ -167,18 +167,38 @@ async function main() {
             console.log("Нет данных о генерациях.");
         }
 
-        // Task 11: Online users per day
-        console.log("Количество пользователей онлайн по дням:");
+        // // Task 11: Online users per day
+        // console.log("Количество пользователей онлайн по дням:");
+        // for (let d = new Date(startDate); d <= endDate; d.setDate(d.getDate() + 1)) {
+        //     const startOfDay = new Date(d);
+        //     const endOfDay = new Date(d);
+        //     endOfDay.setDate(d.getDate() + 1);
+
+        //     const dailyOnlineUsers = await images.distinct('userId', {
+        //         createdAt: { $gte: startOfDay, $lt: endOfDay }
+        //     });
+
+        //     console.log(`Дата: ${startOfDay.toISOString().split('T')[0]} - Онлайн пользователи: ${dailyOnlineUsers.length}`);
+        // }
+
+        // Task 12: Average amount of images genereted per online users per day
         for (let d = new Date(startDate); d <= endDate; d.setDate(d.getDate() + 1)) {
             const startOfDay = new Date(d);
-            const endOfDay = new Date(d);
-            endOfDay.setDate(d.getDate() + 1);
+            const endOfDay = new Date(startOfDay);
+            endOfDay.setDate(startOfDay.getDate() + 1);
 
-            const dailyOnlineUsers = await images.distinct('userId', {
+            // Get the count of online users by identifying users with image generation on that day
+            const onlineUsersIds = await images.distinct('userId', {
                 createdAt: { $gte: startOfDay, $lt: endOfDay }
             });
 
-            console.log(`Дата: ${startOfDay.toISOString().split('T')[0]} - Онлайн пользователи: ${dailyOnlineUsers.length}`);
+            // Get the number of images generated on that day
+            const dailyGenerations = await images.countDocuments({ createdAt: { $gte: startOfDay, $lt: endOfDay } });
+            
+            // Calculate the average number of images per online user for the day
+            const averageImagesPerOnlineUser = onlineUsersIds.length > 0 ? (dailyGenerations / onlineUsersIds.length).toFixed(2) : 0;
+
+            console.log(`Дата: ${startOfDay.toISOString().split('T')[0]} - Онлайн пользователи: ${onlineUsersIds.length}, Среднее среднее количество генераций на онлайн пользователя: ${averageImagesPerOnlineUser}`);
         }
 
     } finally {
